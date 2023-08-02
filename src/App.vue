@@ -3,6 +3,9 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
+  <v-toolbar density="compact" title="Application">
+    <v-app-bar-nav-icon></v-app-bar-nav-icon>
+  </v-toolbar>
   <div>
     <a href="https://vitejs.dev" target="_blank">
       <img src="/electron-vite.svg" class="logo" alt="Vite logo" />

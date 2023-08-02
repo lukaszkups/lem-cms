@@ -10,7 +10,9 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <h1>{{ $t('welcome.home') }}</h1>
+  <h1>{{ $t('headings.welcome') }}</h1>
+  <button @click="$i18n.changeLanguage('pl')">PL</button>
+  <button @click="$i18n.changeLanguage('en')">EN</button>
 </template>
 
 <style scoped>

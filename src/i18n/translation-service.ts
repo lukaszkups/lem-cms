@@ -1,10 +1,12 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { App } from 'vue';
+import { getCurrentWindow } from '@electron/remote';
+import enDict from './en.json';
+import plDict from './pl.json';
 
 declare module 'vue' {
   interface ComponentCustomProperties {
     $t: (key: string) => string;
+    $i18n: TranslationService;
   }
 }
 
@@ -22,20 +24,29 @@ export class TranslationService {
   dict: Keyable;
 
   constructor(props?: TranslationServiceProps) {
-    this.locale = props?.locale || 'en';
+    this.locale = props?.locale || sessionStorage.getItem('locale') || 'en';
     this.dict = {};
+    sessionStorage.setItem('locale', this.locale);
   }
 
   loadTranslations = (): void => {
-    try {
-      const file = fs.readFileSync(path.join(process.cwd(), `/public/i18n/${this.locale}.json`), 'utf-8');
-      this.dict = JSON.parse((file && file.length ? file : '{}'));
-      console.log('Dict loaded: ', this.dict);
-    } catch (err) {
-      console.error('There was an issue when loading translations: ', err);
-      throw new Error();
+    switch (this.locale) {
+      case 'pl':
+        this.dict = plDict;
+        break;
+      default:
+        this.dict = enDict;
+        break;
     }
+    console.log('Dict loaded: ', this.dict);
   };
+
+  changeLanguage = (newLocale: string): void => {
+    this.locale = newLocale || 'en';
+    sessionStorage.setItem('locale', this.locale);
+    this.loadTranslations();
+    location.reload();
+  }
 
   $t = (translationKey: string): string => {
     const translationPropsArr = translationKey.split('.');
@@ -50,13 +61,10 @@ export class TranslationService {
         }
       }
       let currentTranslationObj: any;
-      console.log(1, translationPropsArr);
       translationPropsArr.forEach((item: string, index: number) => {
-        console.log(2, item, index, this.dict[item], currentTranslationObj);
         if (index === 0) {
           currentTranslationObj = this.dict[item];
         } else {
-          console.log(currentTranslationObj, currentTranslationObj[item])
           currentTranslationObj = currentTranslationObj[item];
         }
       });
@@ -75,5 +83,8 @@ export default {
       return i18n.$t(key);
     }
     app.provide('$t', i18n.$t);
+
+    app.config.globalProperties.$i18n = i18n;
+    app.provide('$i18n', i18n);
   }
 }
